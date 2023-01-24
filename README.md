@@ -1,3 +1,9 @@
+Kyle Zschokke
+kzschok3@uoregon.edu
+Simple webpage server that handles errors correctly.
+
+
+
 # UOCIS322 - Project 1 #
 
 This project will get you started with creating a simple webpage server.
