@@ -98,7 +98,7 @@ def respond(sock):
         if file_path.endswith('.html') or file_path.endswith('.css'):
             file_path = './pages' + file_path
             if os.path.isfile(file_path):
-                #open file and transmt
+                #open file and transmit
                 with open(file_path, 'r') as f:
                     content = f.read()
                     transmit(STATUS_OK, sock)
@@ -106,18 +106,19 @@ def respond(sock):
             #if file doesn't open, transmit file not found error
             else:
                 transmit(STATUS_NOT_FOUND, sock)
-                transmit("\nFile not found: {}\n".format(file_path), sock)
-                transmit("This file doesn't exist. Look for any mispellings, or try to make sure you have the right file name", sock)
+                transmit("\nInvalid file name: {}\n".format(file_path), sock)
+                transmit("\nThis file doesn't exist. Look for any mispellings, or try to make sure you have the right file name", sock)
         #if file is not a valid file type, transmit invalid file type error
         else:
             transmit(STATUS_FORBIDDEN, sock)
             transmit("\nInvalid file type: {}\n".format(file_path), sock)
-            transmit("\nYour file type was formatted incorrectly. We only accept HTML and CSS.  Maybe try to remove any incorrectly placed punctuation symbols.", sock)
+            transmit("\nYour file type was formatted incorrectly. We only accept HTML and CSS. Try to remove any incorrectly placed punctuation symbols.", sock)
     #if request format doesn't satisfy requirements, transmit unhandled request rerror
     else:
         log.info("Unhandled request: {}".format(request))
         transmit(STATUS_NOT_IMPLEMENTED, sock)
-        transmit("\nI don't handle this request: {}\n".format(request), sock)
+        transmit("\nInvalid request type: {}\n".format(request), sock)
+        transmit("\nI can only handle GET requests right now.")
 
     sock.shutdown(socket.SHUT_RDWR)
     sock.close()
