@@ -22,6 +22,7 @@ log = logging.getLogger(__name__)
 
 import socket    # Basic TCP/IP communication on the internet
 import _thread   # Response computation runs concurrently with main program
+import os
 
 
 def listen(portnum):
@@ -79,20 +80,40 @@ STATUS_NOT_IMPLEMENTED = "HTTP/1.0 401 Not Implemented\n\n"
 
 
 def respond(sock):
-    """
-    This server responds only to GET requests (not PUT, POST, or UPDATE).
-    Any valid GET request is answered with an ascii graphic of a cat.
-    """
     sent = 0
     request = sock.recv(1024)  # We accept only short requests
     request = str(request, encoding='utf-8', errors='strict')
     log.info("--- Received request ----")
     log.info("Request was {}\n***\n".format(request))
 
+    #format request into a format we can use
     parts = request.split()
+
+
+    #check request type and get path
     if len(parts) > 1 and parts[0] == "GET":
-        transmit(STATUS_OK, sock)
-        transmit(CAT, sock)
+        file_path = parts[1]
+
+        #if file path is a valid file type, get file 
+        if file_path.endswith('.html') or file_path.endswith('.css'):
+            file_path = './pages' + file_path
+            if os.path.isfile(file_path):
+                #open file and transmt
+                with open(file_path, 'r') as f:
+                    content = f.read()
+                    transmit(STATUS_OK, sock)
+                    transmit(content, sock)
+            #if file doesn't open, transmit file not found error
+            else:
+                transmit(STATUS_NOT_FOUND, sock)
+                transmit("\nFile not found: {}\n".format(file_path), sock)
+                transmit("This file doesn't exist. Look for any mispellings, or try to make sure you have the right file name", sock)
+        #if file is not a valid file type, transmit invalid file type error
+        else:
+            transmit(STATUS_FORBIDDEN, sock)
+            transmit("\nInvalid file type: {}\n".format(file_path), sock)
+            transmit("\nYour file type was formatted incorrectly. We only accept HTML and CSS.  Maybe try to remove any incorrectly placed punctuation symbols.", sock)
+    #if request format doesn't satisfy requirements, transmit unhandled request rerror
     else:
         log.info("Unhandled request: {}".format(request))
         transmit(STATUS_NOT_IMPLEMENTED, sock)
